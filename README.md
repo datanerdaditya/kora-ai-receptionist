@@ -2,7 +2,7 @@
 
 Kora answers patients through a voice widget on a clinic's website. It books, moves and cancels appointments, answers questions using only the clinic's own information, and passes emergencies and callback requests to the staff. A new clinic is a config file, not new code.
 
-**Live demo:** coming soon at `demo.buildaditya.com` · **More:** [buildaditya.com](https://buildaditya.com)
+**Demo video:** coming soon · **More:** [buildaditya.com](https://buildaditya.com)
 
 <!-- Add the demo GIF or video here once recorded: ![Kora demo](docs/demo.gif) -->
 
@@ -96,14 +96,22 @@ uv sync
 cp .env.example .env.local      # then fill in your keys
 ```
 
-In two terminals:
+Start everything with one command:
+
+```bash
+./demo.sh            # fresh start: archives the previous demo's bookings, calls and callbacks
+./demo.sh --keep     # keep the previous data
+./demo.sh --share    # also print a temporary public link (needs cloudflared)
+```
+
+It starts the voice agent and the web server, waits until both are ready, and opens the demo clinic (http://localhost:8000) and the staff page (http://localhost:8000/admin, user `admin`, password from `ADMIN_PASSWORD`). Ctrl-C stops everything. Logs go to `data/logs/`.
+
+Or run the two parts yourself, in two terminals:
 
 ```bash
 uv run agent.py dev                          # the voice agent
 uv run uvicorn server:app --port 8000        # demo page, widget and admin
 ```
-
-Open http://localhost:8000 for the demo clinic and http://localhost:8000/admin for the staff page (user `admin`, password from `ADMIN_PASSWORD`).
 
 Tests:
 
@@ -138,6 +146,7 @@ Optional attributes: `data-label`, `data-color`, `data-server`.
 | `web/` | Widget, demo page, admin page |
 | `clinics/` | One YAML file per clinic |
 | `evals.py`, `eval_scenarios.py` | Automated conversation tests |
+| `demo.sh` | Starts the whole demo with one command |
 
 ## Status
 
