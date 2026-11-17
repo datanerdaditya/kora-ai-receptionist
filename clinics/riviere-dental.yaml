@@ -1,0 +1,126 @@
+id: riviere-dental
+name: Rivière Dental Clinic
+specialty: dental
+timezone: Europe/Paris
+languages:
+- English
+- French
+voice: aura-2-thalia-en
+greeting: Hello, you've reached Rivière Dental Clinic. I'm an AI assistant. How can I help you today?
+address: 12 rue des Tilleuls, 75011 Paris
+directions: Five minutes on foot from Oberkampf metro station, lines 5 and 9. The entrance is on the street,
+  with a blue door next to a bakery.
+phone: 01 99 00 12 34
+email: contact@riviere-dental.example
+hours:
+  monday: 09:00-19:00
+  tuesday: 09:00-19:00
+  wednesday: 09:00-19:00
+  thursday: 09:00-19:00
+  friday: 09:00-18:00
+  saturday: 09:00-13:00
+  sunday: closed
+closed_dates:
+- date: '2026-12-25'
+  reason: Christmas Day
+- date: '2027-01-01'
+  reason: New Year's Day
+practitioners:
+- name: Dr Claire Moreau
+  role: General dentist
+- name: Dr Julien Lefèvre
+  role: General dentist, also sees children
+- name: Sophie Bernard
+  role: Dental hygienist
+booking:
+  slot_minutes: 15
+  buffer_minutes: 5
+  min_notice_minutes: 60
+  max_days_ahead: 60
+services:
+- name: Check-up and consultation
+  duration_minutes: 30
+  price_eur: 30.0
+  price_note: null
+  description: Examination of teeth and gums, with advice on any treatment needed.
+  practitioners:
+  - Dr Claire Moreau
+  - Dr Julien Lefèvre
+  min_notice_minutes: null
+- name: Scale and polish (cleaning)
+  duration_minutes: 45
+  price_eur: 80.0
+  price_note: null
+  description: Professional cleaning by the hygienist.
+  practitioners:
+  - Sophie Bernard
+  min_notice_minutes: null
+- name: Teeth whitening
+  duration_minutes: 60
+  price_eur: 350.0
+  price_note: null
+  description: In-clinic whitening in one session. Patients need a dental check-up in the last six months,
+    at this clinic or another; if they have had one, they can book whitening directly.
+  practitioners:
+  - Dr Claire Moreau
+  min_notice_minutes: null
+- name: Filling
+  duration_minutes: 45
+  price_eur: null
+  price_note: From 60 euros, depending on the size and material. The dentist confirms the price at the
+    check-up.
+  description: Treatment of a cavity with a tooth-coloured filling.
+  practitioners:
+  - Dr Claire Moreau
+  - Dr Julien Lefèvre
+  min_notice_minutes: null
+- name: Emergency appointment
+  duration_minutes: 30
+  price_eur: 50.0
+  price_note: null
+  description: For pain, a broken tooth or a lost filling. Same-day slots are kept free when possible.
+  practitioners:
+  - Dr Claire Moreau
+  - Dr Julien Lefèvre
+  min_notice_minutes: 15
+- name: Children's check-up
+  duration_minutes: 30
+  price_eur: 25.0
+  price_note: null
+  description: For children under 12, with Dr Lefèvre.
+  practitioners:
+  - Dr Julien Lefèvre
+  min_notice_minutes: null
+policies:
+- Please cancel or reschedule at least 24 hours before your appointment.
+- Missed appointments without notice may be charged 30 euros.
+- If you are more than 10 minutes late, we may need to reschedule.
+- Payment is by bank card or cash. Cheques are not accepted.
+- The clinic accepts the carte Vitale. Reimbursement depends on your own cover.
+- New patients are welcome. Please arrive 10 minutes early for a first visit.
+faqs:
+- q: Is there parking?
+  a: There is no clinic car park. The nearest public car park is Parking Oberkampf, about three minutes
+    away on foot.
+- q: Is the clinic wheelchair accessible?
+  a: Yes. The entrance is step-free and there is an accessible toilet.
+- q: What should I bring to my first appointment?
+  a: An identity document, your carte Vitale if you have one, and a list of any medicines you take.
+- q: Do you treat children?
+  a: Yes. Dr Lefèvre sees children from the age of three.
+- q: Do the dentists speak English?
+  a: Yes. All staff speak French and English.
+- q: How should I prepare for teeth whitening?
+  a: Have a check-up first, and a cleaning is recommended in the two weeks before. Avoid coffee, tea and
+    red wine for 48 hours afterwards.
+- q: Can I pay in instalments?
+  a: Payment in two or three instalments is possible for treatments over 300 euros. Please ask at reception.
+emergency:
+  life_threatening: For heavy bleeding that will not stop, difficulty breathing or swallowing, swelling
+    of the face that is spreading, or a serious injury to the face or jaw, call 15 or 112 immediately.
+  out_of_hours: When the clinic is closed and you have severe dental pain, call 15 and ask for the on-call
+    dentist.
+staff_contact:
+  email: reception@riviere-dental.example
+transcript_retention_days: 30
+allowed_origins: []

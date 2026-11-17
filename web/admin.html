@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinic admin</title>
+<style>
+  :root { --c: #0f766e; --line: #e5e7eb; --muted: #6b7280; --danger: #b91c1c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; background: #f3f4f6; font-size: 15px; }
+  header { background: var(--c); color: #fff; padding: 18px 24px 0; }
+  header h1 { margin: 0 0 14px; font-size: 22px; }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav button { border: 0; background: transparent; color: #fff; opacity: .8; font-size: 15px; font-weight: 600; padding: 10px 16px; border-radius: 8px 8px 0 0; cursor: pointer; }
+  nav button[aria-selected="true"] { background: #f3f4f6; color: #111827; opacity: 1; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 120px; }
+  section[hidden] { display: none; }
+  h2 { font-size: 17px; margin: 24px 0 10px; }
+  h2:first-child { margin-top: 0; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .card.urgent { border-left: 5px solid var(--danger); }
+  .row { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+  .grow { flex: 1; min-width: 200px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .badge { display: inline-block; background: var(--danger); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-right: 6px; }
+  .empty { color: var(--muted); padding: 12px 0; }
+  button.btn { border: 1px solid #d1d5db; background: #fff; color: #111827; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  button.btn:hover { background: #f3f4f6; }
+  button.primary { background: var(--c); border-color: var(--c); color: #fff; }
+  button.primary:hover { background: var(--c); filter: brightness(1.08); }
+  button.danger { color: var(--danger); border-color: #fca5a5; }
+  button.link { border: 0; background: none; color: var(--c); font-weight: 600; cursor: pointer; padding: 6px 0; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; background: #f9fafb; }
+  tr:last-child td { border-bottom: 0; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 10px 0 4px; }
+  input[type=text], input[type=time], input[type=date], input[type=number], input[type=tel], input[type=email], textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font: inherit; background: #fff; color: #111827; }
+  textarea { min-height: 60px; resize: vertical; }
+  input:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--c); outline-offset: 1px; }
+  .hours-row { display: grid; grid-template-columns: 110px 100px 1fr 1fr; gap: 10px; align-items: center; padding: 6px 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .three { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+  .checks { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
+  .checks label { display: flex; align-items: center; gap: 6px; font-weight: 400; margin: 0; font-size: 14px; }
+  .line { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+  .line > *:first-child { flex: 1; }
+  .savebar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 12px 16px; display: flex; gap: 14px; align-items: center; justify-content: center; }
+  .ok { color: #15803d; font-weight: 600; }
+  .bad { color: var(--danger); }
+  .bad ul { margin: 4px 0 0; padding-left: 18px; }
+  .transcript { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .t-line { margin: 6px 0; line-height: 1.4; }
+  .t-who { font-weight: 700; margin-right: 6px; }
+  .t-action { color: var(--muted); font-size: 13px; font-style: italic; }
+  @media (max-width: 620px) { .two, .three { grid-template-columns: 1fr; } .hours-row { grid-template-columns: 90px 80px 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="clinic-name">Clinic admin</h1>
+  <nav role="tablist">
+    <button role="tab" data-tab="today" aria-selected="true">Today</button>
+    <button role="tab" data-tab="calls" aria-selected="false">Calls</button>
+    <button role="tab" data-tab="details" aria-selected="false">Clinic details</button>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-today">
+    <h2>Callback requests</h2>
+    <div id="callbacks"></div>
+    <h2>Upcoming appointments</h2>
+    <div id="appointments"></div>
+    <p><button class="link" id="refresh">Refresh</button></p>
+  </section>
+
+  <section id="tab-calls" hidden>
+    <h2>Recent calls</h2>
+    <p class="muted" id="retention"></p>
+    <div id="calls"></div>
+    <h2>Erase a patient's data</h2>
+    <div class="card">
+      <p class="muted" style="margin-top:0">Deletes every appointment, callback request and transcript linked to one phone number. This cannot be undone.</p>
+      <form class="line" id="forget-form">
+        <input type="tel" id="forget-phone" placeholder="Phone number" aria-label="Phone number" required>
+        <button class="btn danger" type="submit">Erase</button>
+      </form>
+      <div id="forget-result" class="muted"></div>
+    </div>
+  </section>
+
+  <section id="tab-details" hidden>
+    <p class="muted">Changes apply from the next call. The assistant only tells callers what is written here.</p>
+    <h2>Basic details</h2>
+    <div class="card" id="basic"></div>
+    <h2>Opening hours</h2>
+    <div class="card" id="hours"></div>
+    <h2>Closed dates</h2>
+    <div class="card"><div id="closed"></div><button class="link" id="add-closed">+ Add a closed date</button></div>
+    <h2>Services and prices</h2>
+    <div id="services"></div>
+    <button class="link" id="add-service">+ Add a service</button>
+    <h2>Policies</h2>
+    <div class="card"><div id="policies"></div><button class="link" id="add-policy">+ Add a policy</button></div>
+    <h2>Frequently asked questions</h2>
+    <div id="faqs"></div>
+    <button class="link" id="add-faq">+ Add a question</button>
+    <div class="savebar">
+      <div id="save-result" role="status" aria-live="polite"></div>
+      <button class="btn primary" id="save">Save changes</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var CLINIC = new URLSearchParams(location.search).get("clinic") || "riviere-dental";
+  var API = "/admin/api/" + encodeURIComponent(CLINIC);
+  var DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+  var config = null;        // the editable part of the clinic config
+  var practitioners = [];   // names, for the service checkboxes
+
+  function $(id) { return document.getElementById(id); }
+
+  // Builds an element. Text always goes in as text, never as HTML, because
+  // names, reasons and transcripts come from callers.
+  function h(tag, props, children) {
+    var node = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (key) {
+      if (key === "text") node.textContent = props[key];
+      else if (key === "class") node.className = props[key];
+      else if (key.slice(0, 2) === "on") node.addEventListener(key.slice(2), props[key]);
+      else if (props[key] === true) node.setAttribute(key, "");
+      else if (props[key] !== false && props[key] != null) node.setAttribute(key, props[key]);
+    });
+    (children || []).forEach(function (child) { if (child) node.appendChild(child); });
+    return node;
+  }
+
+  async function call(method, path, body) {
+    var response = await fetch(API + path, {
+      method: method,
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    var data = await response.json().catch(function () { return {}; });
+    if (!response.ok) {
+      var error = new Error("Request failed");
+      error.detail = data.detail || "Something went wrong.";
+      throw error;
+    }
+    return data;
+  }
+
+  function fill(container, nodes, emptyText) {
+    container.textContent = "";
+    if (!nodes.length) container.appendChild(h("div", { class: "empty", text: emptyText }));
+    nodes.forEach(function (node) { container.appendChild(node); });
+  }
+
+  // ---------- tabs ----------
+  document.querySelectorAll("nav button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      document.querySelectorAll("nav button").forEach(function (other) {
+        other.setAttribute("aria-selected", other === button ? "true" : "false");
+        $("tab-" + other.dataset.tab).hidden = other !== button;
+      });
+      if (button.dataset.tab === "today") loadToday();
+      if (button.dataset.tab === "calls") loadCalls();
+    });
+  });
+
+  // ---------- Today ----------
+  async function loadToday() {
+    var data = await call("GET", "/overview");
+    $("clinic-name").textContent = data.clinic.name + " admin";
+    document.title = data.clinic.name + " admin";
+
+    fill($("callbacks"), data.callbacks.map(function (item) {
+      return h("div", { class: "card" + (item.urgent ? " urgent" : "") }, [
+        h("div", { class: "row" }, [
+          h("div", { class: "grow" }, [
+            h("div", {}, [
+              item.urgent ? h("span", { class: "badge", text: "URGENT" }) : null,
+              h("strong", { text: item.name }),
+              h("span", { text: "  " }),
+              h("a", { href: "tel:" + item.phone, text: item.phone }),
+            ]),
+            h("div", { text: item.reason, style: "margin:6px 0" }),
+            h("div", { class: "muted", text: "Requested " + item.when.text }),
+          ]),
+          h("button", { class: "btn", text: "Mark as done", onclick: async function () {
+            await call("POST", "/callbacks/" + item.id + "/done"); loadToday();
+          } }),
+        ]),
+      ]);
+    }), "No one is waiting for a callback.");
+
+    var rows = data.appointments.map(function (item) {
+      return h("tr", {}, [
+        h("td", { text: item.when.text }),
+        h("td", {}, [h("div", { text: item.service }), h("div", { class: "muted", text: item.practitioner })]),
+        h("td", {}, [h("div", { text: item.name }), h("a", { class: "muted", href: "tel:" + item.phone, text: item.phone })]),
+        h("td", {}, [h("button", { class: "btn danger", text: "Cancel", onclick: async function () {
+          if (!confirm("Cancel the appointment for " + item.name + " on " + item.when.text + "?")) return;
+          await call("POST", "/appointments/" + item.id + "/cancel"); loadToday();
+        } })]),
+      ]);
+    });
+    if (rows.length) {
+      fill($("appointments"), [h("table", {}, [
+        h("thead", {}, [h("tr", {}, [h("th", { text: "When" }), h("th", { text: "Appointment" }), h("th", { text: "Patient" }), h("th", { text: "" })])]),
+        h("tbody", {}, rows),
+      ])], "");
+    } else {
+      fill($("appointments"), [], "No upcoming appointments.");
+    }
+  }
+  $("refresh").addEventListener("click", loadToday);
+
+  // ---------- Calls ----------
+  var WHO = { caller: "Caller", assistant: "Assistant" };
+
+  async function loadCalls() {
+    var data = await call("GET", "/calls");
+    $("retention").textContent = data.retention_days
+      ? "Transcripts are deleted automatically after " + data.retention_days + " days."
+      : "This clinic does not keep transcripts.";
+    fill($("calls"), data.calls.map(function (item) {
+      var transcript = h("div", { class: "transcript", hidden: true }, item.lines.map(function (line) {
+        if (line.who === "action") return h("div", { class: "t-line t-action", text: line.text });
+        return h("div", { class: "t-line" }, [
+          h("span", { class: "t-who", text: (WHO[line.who] || line.who) + ":" }),
+          h("span", { text: line.text }),
+        ]);
+      }));
+      var toggle = h("button", { class: "btn", text: "Read", onclick: function () {
+        transcript.hidden = !transcript.hidden;
+        toggle.textContent = transcript.hidden ? "Read" : "Hide";
+      } });
+      return h("div", { class: "card" }, [
+        h("div", { class: "row" }, [
+          h("div", { class: "grow" }, [
+            h("strong", { text: item.when.text }),
+            h("span", { class: "muted", text: "  about " + item.minutes + " min" }),
+            h("div", { class: "muted", text: item.preview ? "“" + item.preview + "”" : "" }),
+          ]),
+          h("div", { style: "display:flex;gap:8px" }, [
+            toggle,
+            h("button", { class: "btn danger", text: "Delete", onclick: async function () {
+              if (!confirm("Delete this transcript? This cannot be undone.")) return;
+              await call("DELETE", "/calls/" + item.id); loadCalls();
+            } }),
+          ]),
+        ]),
+        transcript,
+      ]);
+    }), "No calls yet.");
+  }
+
+  $("forget-form").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    var phone = $("forget-phone").value.trim();
+    if (!confirm("Erase everything linked to " + phone + "? This cannot be undone.")) return;
+    try {
+      var result = await call("POST", "/forget", { phone: phone });
+      $("forget-result").textContent = "Erased " + result.appointments + " appointment(s), " +
+        result.callbacks + " callback request(s) and " + result.transcripts + " transcript(s).";
+      $("forget-phone").value = "";
+      loadCalls();
+    } catch (error) {
+      $("forget-result").textContent = String(error.detail);
+    }
+  });
+
+  // ---------- Clinic details ----------
+  function field(labelText, input) {
+    return h("div", {}, [h("label", { text: labelText }), input]);
+  }
+
+  function textInput(object, key, type, extra) {
+    var props = Object.assign({ type: type || "text", value: object[key] == null ? "" : object[key] }, extra || {});
+    props.oninput = function (event) {
+      var value = event.target.value;
+      if (type === "number") object[key] = value === "" ? null : Number(value);
+      else object[key] = value.trim() === "" && extra && extra.optional ? null : value;
+    };
+    delete props.optional;
+    return h("input", props);
+  }
+
+  function textArea(object, key) {
+    var area = h("textarea", { oninput: function (event) {
+      object[key] = event.target.value.trim() === "" ? null : event.target.value;
+    } });
+    area.value = object[key] || "";
+    return area;
+  }
+
+  function removeButton(list, item, redraw) {
+    return h("button", { class: "btn danger", type: "button", text: "Remove", onclick: function () {
+      list.splice(list.indexOf(item), 1); redraw();
+    } });
+  }
+
+  function drawBasic() {
+    fill($("basic"), [
+      h("div", { class: "two" }, [field("Clinic name", textInput(config, "name")), field("Phone", textInput(config, "phone", "tel"))]),
+      field("Address", textInput(config, "address")),
+      field("Directions (optional)", textArea(config, "directions")),
+      field("Email (optional)", textInput(config, "email", "email", { optional: true })),
+      field("Greeting, spoken at the start of every call. It must say the caller is talking to an AI assistant.", textArea(config, "greeting")),
+    ], "");
+  }
+
+  function drawHours() {
+    fill($("hours"), DAYS.map(function (day) {
+      var value = config.hours[day];
+      var closed = value === "closed";
+      var parts = closed ? ["09:00", "18:00"] : value.split("-");
+      var opens = h("input", { type: "time", value: parts[0], disabled: closed, "aria-label": day + " opens" });
+      var closes = h("input", { type: "time", value: parts[1], disabled: closed, "aria-label": day + " closes" });
+      var box = h("input", { type: "checkbox", checked: !closed });
+      function update() {
+        opens.disabled = closes.disabled = !box.checked;
+        config.hours[day] = box.checked ? opens.value + "-" + closes.value : "closed";
+      }
+      [opens, closes, box].forEach(function (node) { node.addEventListener("change", update); });
+      return h("div", { class: "hours-row" }, [
+        h("strong", { text: day.charAt(0).toUpperCase() + day.slice(1) }),
+        h("label", { class: "checks", style: "margin:0;font-weight:400;display:flex;gap:6px;align-items:center" }, [box, h("span", { text: "Open" })]),
+        opens, closes,
+      ]);
+    }), "");
+  }
+
+  function drawClosed() {
+    fill($("closed"), config.closed_dates.map(function (item) {
+      return h("div", { class: "line" }, [
+        h("div", { class: "two" }, [textInput(item, "date", "date", { "aria-label": "Date" }), textInput(item, "reason", "text", { placeholder: "Reason", "aria-label": "Reason" })]),
+        removeButton(config.closed_dates, item, drawClosed),
+      ]);
+    }), "No closed dates.");
+  }
+
+  function drawServices() {
+    fill($("services"), config.services.map(function (service) {
+      var checks = h("div", { class: "checks" }, practitioners.map(function (name) {
+        var box = h("input", { type: "checkbox", checked: service.practitioners.indexOf(name) !== -1 });
+        box.addEventListener("change", function () {
+          service.practitioners = practitioners.filter(function (person) {
+            return person === name ? box.checked : service.practitioners.indexOf(person) !== -1;
+          });
+        });
+        return h("label", {}, [box, h("span", { text: name })]);
+      }));
+      return h("div", { class: "card" }, [
+        h("div", { class: "three" }, [
+          field("Service", textInput(service, "name")),
+          field("Minutes", textInput(service, "duration_minutes", "number", { min: 5, step: 5 })),
+          field("Price in euros", textInput(service, "price_eur", "number", { min: 0, step: "any", placeholder: "leave empty if it varies" })),
+        ]),
+        field("Price note (optional), e.g. \"From 60 euros, confirmed at the check-up\"", textInput(service, "price_note", "text", { optional: true })),
+        field("Description (optional)", textArea(service, "description")),
+        h("label", { text: "Who performs it. Leave all unticked if it cannot be booked by the assistant." }),
+        checks,
+        h("div", { style: "margin-top:12px" }, [removeButton(config.services, service, drawServices)]),
+      ]);
+    }), "No services.");
+  }
+
+  function drawPolicies() {
+    fill($("policies"), config.policies.map(function (text, index) {
+      var input = h("input", { type: "text", value: text, "aria-label": "Policy" });
+      input.addEventListener("input", function () { config.policies[index] = input.value; });
+      return h("div", { class: "line" }, [input, h("button", { class: "btn danger", type: "button", text: "Remove", onclick: function () {
+        config.policies.splice(index, 1); drawPolicies();
+      } })]);
+    }), "No policies.");
+  }
+
+  function drawFaqs() {
+    fill($("faqs"), config.faqs.map(function (faq) {
+      return h("div", { class: "card" }, [
+        field("Question", textInput(faq, "q")),
+        field("Answer", textArea(faq, "a")),
+        h("div", { style: "margin-top:12px" }, [removeButton(config.faqs, faq, drawFaqs)]),
+      ]);
+    }), "No questions yet.");
+  }
+
+  function drawDetails() { drawBasic(); drawHours(); drawClosed(); drawServices(); drawPolicies(); drawFaqs(); }
+
+  $("add-closed").addEventListener("click", function () { config.closed_dates.push({ date: "", reason: "" }); drawClosed(); });
+  $("add-policy").addEventListener("click", function () { config.policies.push(""); drawPolicies(); });
+  $("add-faq").addEventListener("click", function () { config.faqs.push({ q: "", a: "" }); drawFaqs(); });
+  $("add-service").addEventListener("click", function () {
+    config.services.push({ name: "", duration_minutes: 30, price_eur: null, price_note: null, description: null, practitioners: [] });
+    drawServices();
+  });
+
+  $("save").addEventListener("click", async function () {
+    var result = $("save-result");
+    result.className = ""; result.textContent = "Saving…";
+    var cleaned = JSON.parse(JSON.stringify(config));
+    cleaned.policies = cleaned.policies.filter(function (text) { return text.trim(); });
+    cleaned.faqs.forEach(function (faq) { faq.a = faq.a || ""; });
+    try {
+      await call("PUT", "/config", cleaned);
+      result.className = "ok"; result.textContent = "Saved. Changes apply from the next call.";
+      loadToday();
+    } catch (error) {
+      result.className = "bad"; result.textContent = "Not saved. Please fix:";
+      var problems = Array.isArray(error.detail) ? error.detail : [String(error.detail)];
+      result.appendChild(h("ul", {}, problems.map(function (text) { return h("li", { text: text }); })));
+    }
+  });
+
+  // ---------- start ----------
+  (async function () {
+    try {
+      await loadToday();
+      var data = await call("GET", "/config");
+      config = data.editable;
+      practitioners = data.practitioners;
+      drawDetails();
+    } catch (error) {
+      fill($("callbacks"), [], String(error.detail || "Could not load. Check the address and try again."));
+    }
+  })();
+})();
+</script>
+</body>
+</html>

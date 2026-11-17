@@ -1,0 +1,28 @@
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+
+# Patient and call data
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Clinic config backups written by the admin page
+clinics/*.bak
+clinics/*.tmp
+
+# Generated test output
+eval_report.md
+
+# Python and tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Editor and OS
+.vscode/
+.DS_Store
