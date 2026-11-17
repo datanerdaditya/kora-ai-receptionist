@@ -80,7 +80,7 @@ A spoken checklist through the real widget also passed 10 / 10: spelled names, f
 ## What testing taught me
 
 - **One default setting cost 1.2 seconds per reply.** The Anthropic plugin's strict tool mode was on by default. A small benchmark (`bench_llm.py`) measured 1.83 s to first token with it on, 0.65 s with it off.
-- **Text becomes speech exactly as written.** The model wrote numbered lists for multiple appointments, which sounds robotic aloud. The prompt now says so explicitly.
+- **Text becomes speech exactly as written.** The model wrote numbered lists for multiple appointments, which sounds robotic aloud. The prompt now says so explicitly, and because the model still slips now and then, a small filter (`speech_text.py`) removes list markers from the text stream before it reaches the voice.
 - **Names are the weakest point.** "Aditya" was heard as "Aditi", and spelled letters arrived as one word. The agent now splits and reads back spelled names.
 - **Agents invent helpful-sounding abilities.** Without a rule, it offered to "take a message" it couldn't save. Every capability is now either backed by a tool or ruled out.
 - **Fix rules in code or config, not only in the prompt.** The late-cancellation warning works reliably because the lookup tool flags late appointments, rather than relying on the model to do the date arithmetic.
@@ -109,6 +109,7 @@ Tests:
 
 ```bash
 uv run python test_booking.py                # booking rules
+uv run python test_speech_text.py            # speech clean-up filter
 uv run python evals.py                       # 54 conversation scenarios (uses API credits)
 ```
 
@@ -126,6 +127,8 @@ Optional attributes: `data-label`, `data-color`, `data-server`.
 |---|---|
 | `agent.py` | Voice pipeline and the agent's tools |
 | `prompts.py` | Builds the system prompt from the clinic config |
+| `agent_prompt.md` | The agent's rules and tools, written out for reading |
+| `speech_text.py` | Cleans the agent's words as they stream to the voice (joins lines, drops list markers), with no added delay |
 | `clinic_config.py` | Loads, validates and saves a clinic's YAML |
 | `booking_service.py` | Booking rules and storage |
 | `booking_tools.py` | Turns booking results into text the agent can say |
